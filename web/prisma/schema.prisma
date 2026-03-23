@@ -1,0 +1,308 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum PropertyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ListingPurpose {
+  BUY
+  RENT
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+enum PermissionAction {
+  VIEW
+  CREATE
+  EDIT
+  DELETE
+}
+
+model Role {
+  id              Int              @id @default(autoincrement())
+  active          Boolean          @default(true)
+  roleName        String           @unique
+  users           User[]
+  rolePermissions RolePermission[]
+  roleMenus       RoleMenuAccess[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  active          Boolean          @default(true)
+  name            String?
+  email           String           @unique
+  passwordHash    String
+  isInternal      Boolean          @default(false)
+  subscriptionPlan SubscriptionPlan @default(FREE)
+  subscriptionEndsAt DateTime?
+  leadCredits     Int              @default(5)
+  roleId          Int
+  role            Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  phone           String?
+  agentProfile    AgentProfile?
+  properties      Property[]
+  favorites       Favorite[]
+  inquiries       Inquiry[]
+  contactReveals  ContactReveal[]
+  userPermissions UserPermission[]
+  userMenus       UserMenuAccess[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([roleId])
+}
+
+model AgentProfile {
+  id          Int      @id @default(autoincrement())
+  active      Boolean  @default(true)
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName String?
+  licenseNo   String?
+  bio         String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PropertyType {
+  id         Int        @id @default(autoincrement())
+  active     Boolean    @default(true)
+  name       String
+  slug       String     @unique
+  properties Property[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  active          Boolean          @default(true)
+  resource        String
+  action          PermissionAction
+  rolePermissions RolePermission[]
+  userPermissions UserPermission[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([resource, action])
+  @@index([resource, active])
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  active       Boolean    @default(true)
+  roleId       Int
+  permissionId Int
+  canAccess    Boolean    @default(true)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model UserPermission {
+  id           Int        @id @default(autoincrement())
+  active       Boolean    @default(true)
+  userId       Int
+  permissionId Int
+  canAccess    Boolean    @default(true)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userId, permissionId])
+  @@index([userId])
+  @@index([permissionId])
+}
+
+model Menu {
+  id        Int              @id @default(autoincrement())
+  active    Boolean          @default(true)
+  key       String           @unique
+  title     String
+  path      String
+  icon      String?
+  parentId  Int?
+  parent    Menu?            @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Menu[]           @relation("MenuHierarchy")
+  sortOrder Int              @default(0)
+  roleMenus RoleMenuAccess[]
+  userMenus UserMenuAccess[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([active, sortOrder])
+}
+
+model RoleMenuAccess {
+  id        Int      @id @default(autoincrement())
+  active    Boolean  @default(true)
+  roleId    Int
+  menuId    Int
+  canView   Boolean  @default(true)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roleId, menuId])
+  @@index([roleId])
+  @@index([menuId])
+}
+
+model UserMenuAccess {
+  id        Int      @id @default(autoincrement())
+  active    Boolean  @default(true)
+  userId    Int
+  menuId    Int
+  canView   Boolean  @default(true)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, menuId])
+  @@index([userId])
+  @@index([menuId])
+}
+
+model Property {
+  id          Int            @id @default(autoincrement())
+  active      Boolean        @default(true)
+  agentId     Int
+  agent       User           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  typeId      Int
+  type        PropertyType   @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  listingType ListingPurpose @default(BUY)
+  title       String
+  description String         @db.Text
+  price       Decimal        @db.Decimal(12, 2)
+  city        String
+  address     String
+  contactPhone String?
+  contactWhatsApp String?
+  contactEmail String?
+  isFeatured  Boolean        @default(false)
+  featuredUntil DateTime?
+  latitude    Decimal?       @db.Decimal(10, 7)
+  longitude   Decimal?       @db.Decimal(10, 7)
+  beds        Int
+  baths       Int
+  areaSqft    Int
+  status      PropertyStatus @default(DRAFT)
+  metadataRaw String?        @db.Text
+  images      PropertyImage[]
+  videos      PropertyVideo[]
+  favorites   Favorite[]
+  inquiries   Inquiry[]
+  contactReveals ContactReveal[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([listingType, status])
+  @@index([city])
+  @@index([latitude, longitude])
+}
+
+model PropertyImage {
+  id         Int      @id @default(autoincrement())
+  active     Boolean  @default(true)
+  propertyId Int
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model PropertyVideo {
+  id          Int      @id @default(autoincrement())
+  active      Boolean  @default(true)
+  propertyId  Int
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  provider    String   @default("local")
+  playbackUrl String
+  posterUrl   String?
+  youtubeVideoId String?
+  embedUrl    String?
+  durationSec Int?
+  status      String   @default("processing")
+  createdAt   DateTime @default(now())
+}
+
+model Favorite {
+  id         Int      @id @default(autoincrement())
+  active     Boolean  @default(true)
+  userId     Int
+  propertyId Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+}
+
+model Inquiry {
+  id           Int      @id @default(autoincrement())
+  active       Boolean  @default(true)
+  propertyId   Int
+  userId       Int
+  message      String   @db.Text
+  contactPhone String?
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+model ContactReveal {
+  id         Int      @id @default(autoincrement())
+  active     Boolean  @default(true)
+  userId     Int
+  propertyId Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([propertyId])
+}
+
+model ContactEnquiry {
+  id        Int      @id @default(autoincrement())
+  active    Boolean  @default(true)
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, isRead])
+  @@index([createdAt])
+}

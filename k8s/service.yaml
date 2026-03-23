@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: real-estate-web
+  namespace: real-estate
+spec:
+  selector:
+    app: real-estate-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP

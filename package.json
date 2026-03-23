@@ -1,0 +1,16 @@
+{
+  "name": "real-estate-service-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "cd web && npm run dev",
+    "lint": "cd web && npm run lint",
+    "typecheck": "cd web && npm run typecheck",
+    "db:generate": "cd web && npm run db:generate",
+    "db:push": "cd web && npm run db:push",
+    "db:seed": "cd web && npm run db:seed"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "tailwindcss": "^4.2.1"
+  }
+}

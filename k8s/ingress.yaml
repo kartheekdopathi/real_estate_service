@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: real-estate-web
+  namespace: real-estate
+  annotations:
+    kubernetes.io/ingress.class: gce
+spec:
+  rules:
+    - host: REPLACE_WITH_DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: real-estate-web
+                port:
+                  number: 80

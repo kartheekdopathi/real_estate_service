@@ -1,0 +1,53 @@
+steps:
+  - name: gcr.io/cloud-builders/npm
+    args: ["ci", "--prefix", "web"]
+
+  - name: gcr.io/cloud-builders/npm
+    args: ["run", "lint", "--prefix", "web"]
+
+  - name: gcr.io/cloud-builders/npm
+    args: ["run", "typecheck", "--prefix", "web"]
+
+  - name: gcr.io/cloud-builders/npm
+    args: ["run", "test", "--prefix", "web"]
+
+  - name: gcr.io/cloud-builders/npm
+    args: ["run", "coverage", "--prefix", "web"]
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - web/Dockerfile
+      - -t
+      - ${_AR_HOST}/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${SHORT_SHA}
+      - ./web
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_AR_HOST}/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${SHORT_SHA}
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image=${_AR_HOST}/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${SHORT_SHA}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --service-account=${_RUNTIME_SA}
+      - --set-env-vars=NODE_ENV=production,MEDIA_PROVIDER=local,JOB_DRIVER=inmemory
+      - --set-secrets=DATABASE_URL=DATABASE_URL:latest,AUTH_JWT_SECRET=AUTH_JWT_SECRET:latest,PROPERTY_URL_SECRET=PROPERTY_URL_SECRET:latest
+
+substitutions:
+  _REGION: asia-south1
+  _AR_HOST: asia-south1-docker.pkg.dev
+  _AR_REPO: real-estate-images
+  _SERVICE_NAME: real-estate-web
+  _RUNTIME_SA: cloud-run-runtime@REPLACE_WITH_PROJECT_ID.iam.gserviceaccount.com
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: real-estate-config
+  namespace: real-estate
+data:
+  NODE_ENV: "production"
+  MEDIA_PROVIDER: "local"
+  JOB_DRIVER: "inmemory"
