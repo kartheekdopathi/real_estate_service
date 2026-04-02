@@ -1,4 +1,3 @@
-import { Prisma } from ".prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -40,7 +39,9 @@ export async function GET(request: NextRequest) {
   const latDelta = radiusKm / 111;
   const lngDelta = radiusKm / (111 * Math.max(Math.cos((lat * Math.PI) / 180), 0.01));
 
-  const where: Prisma.PropertyWhereInput = {
+  type PropertyFindManyArgs = NonNullable<Parameters<typeof prisma.property.findMany>[0]>;
+
+  const where: PropertyFindManyArgs["where"] = {
     active: true,
     status: "PUBLISHED",
     listingType,
@@ -103,7 +104,7 @@ export async function GET(request: NextRequest) {
   });
 
   const results = candidates
-    .flatMap((property) => {
+    .flatMap((property: (typeof candidates)[number]) => {
       const propLat = property.latitude ? Number(property.latitude) : null;
       const propLng = property.longitude ? Number(property.longitude) : null;
 
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
         },
       ];
     })
-    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .sort((a: { distanceKm: number }, b: { distanceKm: number }) => a.distanceKm - b.distanceKm)
     .slice(0, limit);
 
   return NextResponse.json({

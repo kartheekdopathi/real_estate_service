@@ -1,5 +1,5 @@
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 import { env } from "@/lib/env";
 
@@ -25,7 +25,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const prismaLogs: Prisma.LogLevel[] =
+const prismaLogs: Array<"query" | "error" | "warn"> =
   env.PRISMA_LOG_QUERIES === "true" ? ["query", "error", "warn"] : ["error", "warn"];
 
 export const prisma =

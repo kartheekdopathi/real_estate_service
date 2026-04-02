@@ -132,7 +132,7 @@ export default async function Home() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredProperties.map((prop) => {
+              {featuredProperties.map((prop: any) => {
                 const routeId = encodePropertyId(prop.id);
 
                 return (
