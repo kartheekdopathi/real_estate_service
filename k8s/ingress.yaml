@@ -7,8 +7,7 @@ metadata:
     kubernetes.io/ingress.class: gce
 spec:
   rules:
-    - host: REPLACE_WITH_DOMAIN
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
