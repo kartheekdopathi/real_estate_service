@@ -5,6 +5,8 @@ import Navbar from "@/components/Navbar";
 import { encodePropertyId } from "@/lib/property-id-token";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = prisma as any;
