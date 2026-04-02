@@ -14,13 +14,11 @@ export default function CityPickerModal({ onClose }: Props) {
   const [cities, setCities] = useState<City[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Mount portal + lock body scroll
   useEffect(() => {
-    setMounted(true);
     document.body.style.overflow = "hidden";
     setTimeout(() => inputRef.current?.focus(), 80);
     return () => {
@@ -63,7 +61,7 @@ export default function CityPickerModal({ onClose }: Props) {
     router.push("/properties");
   };
 
-  if (!mounted) return null;
+  if (typeof document === "undefined") return null;
 
   return createPortal(
     <div

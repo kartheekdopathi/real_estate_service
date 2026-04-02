@@ -49,6 +49,8 @@ export default async function Home() {
     count: r._count.city,
   }));
 
+  type FeaturedProperty = (typeof featuredProperties)[number];
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.28),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(99,102,241,0.24),_transparent_35%)]" />
@@ -132,7 +134,7 @@ export default async function Home() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredProperties.map((prop: any) => {
+              {featuredProperties.map((prop: FeaturedProperty) => {
                 const routeId = encodePropertyId(prop.id);
 
                 return (
