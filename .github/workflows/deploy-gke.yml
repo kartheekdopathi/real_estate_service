@@ -105,4 +105,4 @@ jobs:
           sed "s|IMAGE_PLACEHOLDER|$IMAGE_URI|g" k8s/deployment.yaml | kubectl apply -f -
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/ingress.yaml
-          kubectl rollout status deployment/real-estate-web -n real-estate --timeout=180s
+          kubectl rollout status deployment/real-estate-web -n real-estate --timeout=900s
