@@ -68,7 +68,11 @@ export const authCookie = {
   name: TOKEN_COOKIE_NAME,
   options: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.AUTH_COOKIE_SECURE === "true"
+      ? true
+      : process.env.AUTH_COOKIE_SECURE === "false"
+        ? false
+        : process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
